@@ -12,5 +12,8 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "firebase-admin": "^10.0.2"
   }
 }
