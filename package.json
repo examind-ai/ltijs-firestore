@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "compile": "tsc",
-    "test": "nyc mocha"
+    "test": "firebase emulators:exec 'npm run test:local' --only firestore",
+    "test:local": "nyc mocha"
   },
   "keywords": [],
   "author": "",
