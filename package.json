@@ -2,11 +2,13 @@
   "name": "ltijs-firestore",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/Firestore.js",
+  "types": "dist/Firestore.d.js",
   "scripts": {
     "compile": "tsc",
     "test": "firebase emulators:exec 'npm run test:local' --only firestore",
-    "test:local": "nyc mocha"
+    "test:local": "nyc mocha",
+    "prepublish": "tsc"
   },
   "keywords": [],
   "author": "",
