@@ -2,6 +2,10 @@
   "name": "@examind/ltijs-firestore",
   "version": "0.1.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/examind-ai/ltijs-firestore.git"
+  },
   "main": "dist/Firestore.js",
   "types": "dist/Firestore.d.js",
   "scripts": {
