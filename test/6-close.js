@@ -6,7 +6,7 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const lti = require('../dist/Provider/Provider');
+const lti = require('ltijs').Provider;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 

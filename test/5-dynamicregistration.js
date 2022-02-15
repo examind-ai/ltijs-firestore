@@ -1,7 +1,7 @@
 // Tests for the Names and Roles class LTI methods
 // Cvmcosta 2020
 const nock = require('nock');
-const Platform = require('../dist/Utils/Platform');
+const Platform = require('../node_modules/ltijs/dist/Utils/Platform');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -65,7 +65,7 @@ const configurationInformation = {
 
 const registrationResponse = { client_id: '123456' };
 
-const lti = require('../dist/Provider/Provider');
+const lti = require('ltijs').Provider;
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 

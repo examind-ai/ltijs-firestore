@@ -1,6 +1,8 @@
 // Tests for the Provider class main methods
 // Cvmcosta 2020
 
+// Mostly borrowed from: https://github.com/Cvmcosta/ltijs/blob/664f25aa3f6c71f0592a02c6d5c394211b7dac55/test/0-provider.js
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiAsPromised = require('chai-as-promised');
@@ -10,8 +12,12 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const path = require('path');
 
-const lti = require('../dist/Provider/Provider');
-const Platform = require('../dist/Utils/Platform');
+// Use Firebase Emulator
+process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
+
+const lti = require('ltijs').Provider;
+const Platform = require('../node_modules/ltijs/dist/Utils/Platform');
+const { default: Firestore } = require('../dist/Firestore');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -19,6 +25,28 @@ const appRoute = '/approute';
 const loginRoute = '/loginroute';
 const keysetRoute = '/keysetroute';
 const dynRegRoute = '/register';
+
+describe('Testing Firestore', function () {
+  this.timeout(10000);
+
+  it('Retrieves inserted value with createdAt', async () => {
+    const db = new Firestore();
+    await db.Insert(
+      'LTIKEY',
+      'widgets',
+      { foo: 'bar' },
+      { id: 'id-123' },
+    );
+
+    const result = await db.Get('LTIKEY', 'widgets', {
+      id: 'id-123',
+    });
+
+    expect(result.length).to.equal(1);
+    expect(result[0].foo).to.equal('bar');
+    expect(result[0].createdAt).to.be.a('number');
+  });
+});
 
 describe('Testing Provider', function () {
   this.timeout(10000);
@@ -35,7 +63,7 @@ describe('Testing Provider', function () {
     const fn = () => {
       lti.setup(
         'LTIKEY',
-        { url: 'mongodb://127.0.0.1/testdatabase' },
+        { plugin: new Firestore() },
         {
           appRoute: appRoute,
           loginRoute: loginRoute,
@@ -60,7 +88,7 @@ describe('Testing Provider', function () {
     const fn = () => {
       lti.setup(
         'LTIKEY',
-        { url: 'mongodb://127.0.0.1/testdatabase' },
+        { plugin: new Firestore() },
         {
           appRoute: appRoute,
           loginRoute: loginRoute,
