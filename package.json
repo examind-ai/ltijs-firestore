@@ -1,5 +1,5 @@
 {
-  "name": "ltijs-firestore",
+  "name": "@examind/ltijs-firestore",
   "version": "0.1.0",
   "description": "",
   "main": "dist/Firestore.js",

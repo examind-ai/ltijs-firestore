@@ -13,13 +13,13 @@ This package allows [LTIJS](https://cvmcosta.github.io/ltijs) to work with a Fir
 ## Installation
 
 ```
-npm install ltijs-firestore
+npm install @examind/ltijs-firestore
 ```
 
 Register the plugin during [LTIJS](https://cvmcosta.github.io/ltijs) setup:
 
 ```
-import Firestore from 'ltijs-firestore';
+import Firestore from '@examind/ltijs-firestore';
 
 lti.setup(
   'LTIKEY',
