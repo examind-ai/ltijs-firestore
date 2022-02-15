@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { db } from './firebase';
+import { admin, db } from './firebase';
 import IDatabase from './IDatabase';
 
 /**
@@ -93,7 +93,10 @@ export default class Firestore implements IDatabase {
       };
     }
 
-    await db.collection(collection).add(newDocData);
+    await db.collection(collection).add({
+      ...newDocData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
     return true;
   }
 
@@ -134,10 +137,10 @@ export default class Firestore implements IDatabase {
           );
 
         if (snap.size === 0)
-          transaction.set(
-            db.collection(collection).doc(),
-            newDocData,
-          );
+          transaction.set(db.collection(collection).doc(), {
+            ...newDocData,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
         else transaction.update(snap.docs[0].ref, newDocData);
       });
     } catch {

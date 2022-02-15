@@ -4,4 +4,6 @@ import * as admin from 'firebase-admin';
 // and determines which Firebase project we're using
 admin.initializeApp();
 
-export const db = admin.firestore();
+const db = admin.firestore();
+
+export { admin, db };
