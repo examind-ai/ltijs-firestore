@@ -70,3 +70,10 @@ To use VS Code's debugger:
 - Open VS Code's `JavaScript Debug Terminal`
 - Add breakpoints in `0-provider.js` or `Firestore.ts`
 - Then `npm test` inside `JavaScript Debug Terminal`
+
+## Publish
+
+- package version in package.json
+- `npm install`
+- commit changes
+- `npm publish --access public`
