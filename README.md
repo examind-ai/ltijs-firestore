@@ -57,7 +57,7 @@ As an alternative to using the Firebase Admin SDK private key, you can choose to
 
 The default detabase provider of LTIJS uses MongoDB as its storage layer and it's configured to automatically purge stale documents. Using `@examind/ltijs-firestore` alone will not do that for Firestore. You must also use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
 
-# Contibution
+# Contribution
 
 If you find a bug or think that something is hard to understand, please open an issue. Pull requests are also welcome 🙂
 
