@@ -30,7 +30,7 @@ lti.setup(
 
 ## Firestore Authentication
 
-The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
+The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key with access to Firestore. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
 
 - Select your project from [Firebase Console](https://console.firebase.google.com/)
 - Go to `Project Settings` -> `Service accounts`, then download a new private key:
