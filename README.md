@@ -6,11 +6,11 @@
 
 > LTIJS Firestore plugin.
 
-## Introduction
+# Introduction
 
-This package allows [LTIJS](https://cvmcosta.github.io/ltijs) to work with a Firestore instead of MongoDB.
+This package allows [LTIJS](https://cvmcosta.github.io/ltijs) to work with Firestore instead of MongoDB.
 
-## Installation
+# Installation
 
 ```
 npm install @examind/ltijs-firestore
@@ -30,31 +30,38 @@ lti.setup(
 
 ## Firestore Authentication
 
-The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable shall point to a GCP Service Account key. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
+The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
 
-![image](https://user-images.githubusercontent.com/504505/153650439-8940aa08-695d-4d4d-b4d2-55c28fe0c7c7.png)
+- Select your project from [Firebase Console](https://console.firebase.google.com/)
+- Go to `Project Settings` -> `Service accounts`, then download a new private key:
 
-Save that file somewhere (e.g. `./service-account.json`), then point `GOOGLE_APPLICATION_CREDENTIALS` to that file. If you use a `.env` file, it will look like this:
+![image](https://user-images.githubusercontent.com/504505/154392946-8bb689c5-e68a-41f8-8981-862246ea4a00.png)
+
+Save that file somewhere (e.g. `./service-account.json`), then point `GOOGLE_APPLICATION_CREDENTIALS` to that file. If you use [dotenv](https://www.npmjs.com/package/dotenv), then your `.env` file will look like this:
 
 ```
 GOOGLE_APPLICATION_CREDENTIALS=./service-account.json
 ```
 
-If you prefer to hard code the environment variable inside a Node.js file, it can look like this:
+If you prefer to hard code the environment variable inside a Node.js file, you can do this:
 
 ```
 process.env.GOOGLE_APPLICATION_CREDENTIALS = './service-account.json'
 ```
 
-While the Firebase Admin SDK private key is convenient, it grants more permissions than necessary. To adhere to the principle of least privilege, create a custom service account with only the `Cloud Datastore User` role and use that key instead:
+## Principle of Least Privilege
 
-![image](https://user-images.githubusercontent.com/504505/153652016-977bc74b-2707-4756-9d7e-16e2f8b4bf70.png)
+As an alternative to using the Firebase Admin SDK private key, you can choose to only grant the necessary permissions to `@examind/ltijs-firestore`. To do this, [create a custom service account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) with only the `Cloud Datastore User` role and use its key instead.
 
-## Contibution
+## Purging Stale Documents
+
+The default detabase provider of LTIJS uses MongoDB as its storage layer and it's configured to autmatically purge stale documents. Using `@examind/ltijs-firestore` alone will not do that for Firestore. To configure your Firebase project to automatically purge stale documents created by LTIJS, use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
+
+# Contibution
 
 If you find a bug or think that something is hard to understand, please open an issue. Pull requests are also welcome 🙂
 
-### Unit Test
+## Unit Test
 
 Running unit tests requires that the Firebase CLI (`firebase-tools`) is installed globally:
 
@@ -71,9 +78,9 @@ To use VS Code's debugger:
 - Add breakpoints in `0-provider.js` or `Firestore.ts`
 - Then `npm test` inside `JavaScript Debug Terminal`
 
-## Publish
+# Publish
 
-- package version in package.json
+- Bump version in package.json
 - `npm install`
-- commit changes
+- Commit changes
 - `npm publish --access public`
