@@ -12,7 +12,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 16
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -31,7 +31,6 @@ jobs:
 
   version_check:
     needs: test
-    name: Check version
     runs-on: ubuntu-latest
     outputs:
       # https://github.community/t/sharing-a-variable-between-jobs/16967/14
