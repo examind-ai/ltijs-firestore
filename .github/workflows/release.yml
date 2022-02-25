@@ -60,7 +60,9 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          # Must use personal access token and not secrets.GITHUB_TOKEN to trigger on.release.created event, which publish.yml watches for
+          # https://github.community/t/github-action-trigger-on-release-not-working-if-releases-was-created-by-automation/16559
+          GITHUB_TOKEN: ${{secrets.JOHNNY_PERSONAL_GITHUB_TOKEN}}
         with:
           tag_name: v${{needs.version_check.outputs.version}}
           release_name: Release ${{needs.version_check.outputs.version}}
