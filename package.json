@@ -10,7 +10,7 @@
   "types": "dist/Firestore.d.js",
   "scripts": {
     "compile": "tsc",
-    "test": "firebase emulators:exec 'npm run test:local' --only firestore",
+    "test": "firebase emulators:exec 'npm run test:local' --only firestore --project foobar",
     "test:local": "nyc mocha",
     "prepublish": "tsc"
   },
