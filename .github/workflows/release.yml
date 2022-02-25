@@ -1,0 +1,71 @@
+name: Create GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.yml'
+      - 'src/**'
+      - 'package.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Cache firebase emulators
+        # Firebase Emulator caching technique: https://stackoverflow.com/a/66422608/188740
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/firebase/emulators
+          key: ${{runner.os}}-firebase-emulators-${{hashFiles('~/.cache/firebase/emulators/**')}}
+      - run: npm install -g firebase-tools@10.0.1
+      - run: npm ci
+      - run: npm run compile
+      - run: npm test
+
+  version_check:
+    needs: test
+    name: Check version
+    runs-on: ubuntu-latest
+    outputs:
+      # https://github.community/t/sharing-a-variable-between-jobs/16967/14
+      changed: ${{steps.check.outputs.changed}}
+      version: ${{steps.check.outputs.version}}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Check if version changed in package.json
+        id: check
+        uses: EndBug/version-check@v1 # https://github.com/marketplace/actions/version-check
+        with:
+          diff-search: true
+          file-name: ./package.json
+
+  create_release:
+    needs: version_check
+    if: ${{needs.version_check.outputs.changed == 'true'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create Release
+        # https://github.com/actions/create-release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          tag_name: v${{needs.version_check.outputs.version}}
+          release_name: Release ${{needs.version_check.outputs.version}}
+          body: |
+            @examind/ltijs-firestore
+          draft: false
+          prerelease: false

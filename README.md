@@ -82,5 +82,4 @@ To use VS Code's debugger:
 
 - Bump version in package.json
 - `npm install`
-- Commit changes
-- `npm publish --access public`
+- Commit with message: `Release {version, e.g. 0.1.6}`
