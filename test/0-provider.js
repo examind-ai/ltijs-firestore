@@ -26,25 +26,111 @@ const loginRoute = '/loginroute';
 const keysetRoute = '/keysetroute';
 const dynRegRoute = '/register';
 
-describe('Testing Firestore', function () {
+describe('Firestore Get', function () {
   this.timeout(10000);
 
-  it('Retrieves inserted value with createdAt', async () => {
+  it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in', async () => {
     const db = new Firestore();
     await db.Insert(
       'LTIKEY',
       'widgets',
-      { foo: 'bar' },
-      { id: 'id-123' },
+      { foo: 'bar-1' },
+      { id: 'id-1' },
     );
 
     const result = await db.Get('LTIKEY', 'widgets', {
-      id: 'id-123',
+      id: 'id-1',
     });
 
     expect(result.length).to.equal(1);
-    expect(result[0].foo).to.equal('bar');
+    expect(Object.keys(result[0]).length).to.equal(2); // If ENCRYPTIONKEY is passed in, only item and createdAt are returned
+    expect(result[0].foo).to.equal('bar-1');
     expect(result[0].createdAt).to.be.a('number');
+  });
+
+  it('Index is ignored if ENCRYPTIONKEY is not passed in', async () => {
+    const db = new Firestore();
+    await db.Insert(
+      false,
+      'widgets',
+      { foo: 'bar-2' },
+      { id: 'id-2' },
+    );
+
+    const result = await db.Get(false, 'widgets', {
+      id: 'id-2',
+    });
+
+    expect(result).to.equal(false);
+  });
+
+  it('Query by item if if ENCRYPTIONKEY is not passed in', async () => {
+    const db = new Firestore();
+    await db.Insert(false, 'widgets', { id: 'id-3', name: 'tyson' });
+
+    const result = await db.Get(false, 'widgets', {
+      id: 'id-3',
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].id).to.equal('id-3');
+    expect(result[0].name).to.equal('tyson');
+    expect(result[0].createdAt).to.be.ok;
+  });
+
+  it('Returns multiple results for multiple matches', async () => {
+    const db = new Firestore();
+    await db.Insert(
+      'LTIKEY',
+      'widgets',
+      { platformName: 'Adara' },
+      { platformId: 'platform-1', location: 'Vancouver', count: 1 },
+    );
+
+    await db.Insert(
+      'LTIKEY',
+      'widgets',
+      { platformName: 'Arius' },
+      { platformId: 'platform-1', location: 'Vancouver', count: 2 },
+    );
+
+    const result = await db.Get('LTIKEY', 'widgets', {
+      platformId: 'platform-1',
+      location: 'Vancouver',
+    });
+
+    expect(result.length).to.equal(2);
+    expect(['Adara', 'Arius']).to.include(result[0].platformName);
+    expect(['Adara', 'Arius']).to.include(result[1].platformName);
+    expect(result[0].platformName).to.not.equal(
+      result[1].platformName,
+    );
+  });
+
+  it('Returns exact match only', async () => {
+    const db = new Firestore();
+    await db.Insert(
+      'LTIKEY',
+      'widgets',
+      { platformName: 'Acantha' },
+      { platformId: 'platform-2', location: 'Burnaby' },
+    );
+
+    await db.Insert(
+      'LTIKEY',
+      'widgets',
+      { platformName: 'Acestes' },
+      { platformId: 'platform-2', location: 'Coquitlam' },
+    );
+
+    const result = await db.Get('LTIKEY', 'widgets', {
+      platformId: 'platform-2',
+      location: 'Coquitlam',
+    });
+
+    expect(result.length).to.equal(1);
+    expect(result[0].platformName).to.equal('Acestes');
   });
 });
 
