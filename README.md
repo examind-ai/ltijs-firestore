@@ -16,11 +16,21 @@ This package allows [LTIJS](https://cvmcosta.github.io/ltijs) to work with Fires
 npm install @examind/ltijs-firestore
 ```
 
-Register the plugin during [LTIJS](https://cvmcosta.github.io/ltijs) setup:
+Import package (TypeScript and ES Modules):
 
 ```
 import Firestore from '@examind/ltijs-firestore';
+```
 
+Import package (CommonJS):
+
+```
+const { default: Firestore } = require('@examind/ltijs-firestore');
+```
+
+Register the plugin during [LTIJS](https://cvmcosta.github.io/ltijs) setup:
+
+```
 lti.setup(
   'LTIKEY',
   { plugin: new Firestore() }
