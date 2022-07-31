@@ -56,24 +56,52 @@ lti.setup(
 
 ## Firestore Authentication
 
-The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key with access to Firestore. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
+The `firebase-admin` library that's used in this package looks for a `LTIJS_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key with access to Firestore. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
 
 - Select your project from [Firebase Console](https://console.firebase.google.com/)
 - Go to `Project Settings` -> `Service accounts`, then download a new private key:
 
 ![image](https://user-images.githubusercontent.com/504505/154392946-8bb689c5-e68a-41f8-8981-862246ea4a00.png)
 
-Save that file somewhere (e.g. `./service-account.json`), then point `GOOGLE_APPLICATION_CREDENTIALS` to that file. If you use [dotenv](https://www.npmjs.com/package/dotenv), then your `.env` file will look like this:
+Save that file somewhere (e.g. `./service-account.json`), then point `LTIJS_APPLICATION_CREDENTIALS` to that file. If you use [dotenv](https://www.npmjs.com/package/dotenv), then your `.env` file will look like this:
 
 ```
-GOOGLE_APPLICATION_CREDENTIALS=./service-account.json
+LTIJS_APPLICATION_CREDENTIALS=./service-account.json
 ```
 
 If you prefer to hard code the environment variable inside a Node.js file, you can do this:
 
 ```
-process.env.GOOGLE_APPLICATION_CREDENTIALS = './service-account.json'
+process.env.LTIJS_APPLICATION_CREDENTIALS = './service-account.json'
 ```
+
+Notes:
+
+- Specifying the `LTIJS_APPLICATION_CREDENTIALS` environment variable is recommended, but if not available, `firebase-admin` will also look for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+- When using `LTIJS_APPLICATION_CREDENTIALS`, make sure the environment variable is set before you import `@examind/ltijs-firestore`. Example using dotenv:
+
+```
+import { config } from 'dotenv';
+if (process.env.NODE_ENV !== 'production') config();
+import { Firestore } from '@examind/ltijs-firestore';
+```
+
+Or simply the following if you're using dotenv unconditionally:
+
+```
+import 'dotenv/config';
+import { Firestore } from '@examind/ltijs-firestore';
+```
+
+- When using `GOOGLE_APPLICATION_CREDENTIALS`, it's not necessary to set the environment variable before you import `@examind/ltijs-firestore`, as `firebase-admin` will lazy load the credentials. For example, this will work:
+
+```
+import { config } from 'dotenv';
+import { Firestore } from '@examind/ltijs-firestore';
+if (process.env.NODE_ENV !== 'production') config();
+```
+
+- If running this inside of a GCP server (e.g. GCP Compute Engine, GCP Cloud Function, or GCP Cloud Run), you may omit the `LTIJS_APPLICATION_CREDENTIALS` environment variable, as `GOOGLE_APPLICATION_CREDENTIALS` will be set automatically using the default service account.
 
 ## Principle of Least Privilege
 
