@@ -7,14 +7,18 @@ import IDatabase from './IDatabase';
  * Code here follows official Database.js as closely as possible.
  */
 export class Firestore implements IDatabase {
+  // But in VS Code requires options type to be {{}} instead of {Object} in jsdoc annotation: https://stackoverflow.com/a/66587658/188740
   /**
-   *
-   * @param collectionPathPrefix A custom prefix to prepend to the default collection paths.
+   * @param {{}} options Options
+   * @param {string} options.collectionPrefix A custom prefix to prepend to all collection paths. Defaults to empty string.
    * - Example 1: 'ltijs-' will create collections 'ltijs-accsesstoken', 'ltijs-platforms', etc.
    * - Example 2: 'ltijs/index/' will create subcollections 'ltijs/index/accesstoken', 'ltijs/index/platforms', etc.
-   * - Defaults to empty string.
    */
-  constructor(public readonly collectionPathPrefix: string = '') {}
+  constructor(options?: { collectionPrefix?: string }) {
+    this.collectionPrefix = options?.collectionPrefix ?? '';
+  }
+
+  readonly collectionPrefix: string;
 
   /**
    * No-op, as setup for Firestore will happen outside of this class
@@ -33,7 +37,7 @@ export class Firestore implements IDatabase {
   }
 
   private resolveCollectionPath(collection: string) {
-    return this.collectionPathPrefix + collection;
+    return this.collectionPrefix + collection;
   }
 
   private appendFilters(
