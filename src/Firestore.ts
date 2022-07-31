@@ -6,7 +6,7 @@ import IDatabase from './IDatabase';
  * Firestore implementation of official LTIJS Database.js: https://github.com/Cvmcosta/ltijs/blob/664f25aa3f6c71f0592a02c6d5c394211b7dac55/src/Utils/Database.js
  * Code here follows official Database.js as closely as possible.
  */
-export default class Firestore implements IDatabase {
+export class Firestore implements IDatabase {
   /**
    * No-op, as setup for Firestore will happen outside of this class
    */

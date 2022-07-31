@@ -19,13 +19,13 @@ npm install @examind/ltijs-firestore
 Import package (TypeScript and ES Modules):
 
 ```
-import Firestore from '@examind/ltijs-firestore';
+import { Firestore } from '@examind/ltijs-firestore';
 ```
 
 Import package (CommonJS):
 
 ```
-const { default: Firestore } = require('@examind/ltijs-firestore');
+const { Firestore } = require('@examind/ltijs-firestore');
 ```
 
 Register the plugin during [LTIJS](https://cvmcosta.github.io/ltijs) setup:
