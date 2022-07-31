@@ -38,6 +38,22 @@ lti.setup(
 
 ```
 
+The `Firestore` constructor accepts an options object with the following property:
+
+- `collectionPrefix`: A custom prefix to prepend to all collection paths. Defaults to empty string.
+  - Example 1: `ltijs-` will create collections 'ltijs-accsesstoken', 'ltijs-platforms', etc.
+  - Example 2: `ltijs/index/` will create subcollections 'ltijs/index/accesstoken', 'ltijs/index/platforms', etc.
+
+Example with options:
+
+```
+lti.setup(
+  'LTIKEY',
+  { plugin: new Firestore({collectionPrefix: 'ltijs-'}) }
+);
+
+```
+
 ## Firestore Authentication
 
 The `firebase-admin` library that's used in this package looks for a `GOOGLE_APPLICATION_CREDENTIALS` environment variable. That environment variable needs to point to a GCP Service Account key with access to Firestore. For simplicity, you can use the Firebase Admin SDK private key from Firebase Console:
