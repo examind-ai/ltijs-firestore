@@ -17,7 +17,7 @@ process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
 
 const lti = require('ltijs').Provider;
 const Platform = require('../node_modules/ltijs/dist/Utils/Platform');
-const { default: Firestore } = require('../dist/Firestore');
+const { Firestore } = require('../dist/Firestore');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
