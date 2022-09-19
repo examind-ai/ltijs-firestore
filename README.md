@@ -88,7 +88,7 @@ npm link @examind/ltijs-firestore
 Running unit tests requires that the Firebase CLI (`firebase-tools`) is installed globally:
 
 ```
-npm install -g firebase-tools@10.0.1
+npm install -g firebase-tools@11.9.0
 npm ci
 npm run compile
 npm test
