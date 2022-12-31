@@ -17,7 +17,7 @@ process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
 
 const lti = require('ltijs').Provider;
 const Platform = require('../node_modules/ltijs/dist/Utils/Platform');
-const { default: Firestore } = require('../dist/Firestore');
+const { Firestore } = require('../dist/Firestore');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -28,6 +28,44 @@ const dynRegRoute = '/register';
 
 describe('Firestore Get', function () {
   this.timeout(10000);
+
+  it('Honors collectionPrefix', async () => {
+    const db1 = new Firestore({ collectionPrefix: 'ltijs-' });
+    await db1.Insert(
+      'LTIKEY',
+      'widgets',
+      { foo: 'bar' },
+      { id: 'pref-1' },
+    );
+
+    const db2 = new Firestore({ collectionPrefix: 'ltijs-' });
+
+    const result = await db2.Get('LTIKEY', 'widgets', {
+      id: 'pref-1',
+    });
+
+    expect(result.length).to.equal(1);
+    expect(result[0].foo).to.equal('bar');
+  });
+
+  it('Prevents name collision through collectionPrefix', async () => {
+    const db1 = new Firestore({ collectionPrefix: 'ltijs-' });
+    await db1.Insert(
+      'LTIKEY',
+      'prefixes',
+      { foo: 'bar' },
+      { id: 'pref-2' },
+    );
+
+    const db2 = new Firestore();
+
+    const result = await db2.Get('LTIKEY', 'widgets', {
+      id: 'id1',
+    });
+
+    // No result b/c of different collection prefixes
+    expect(result).to.equal(false);
+  });
 
   it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in', async () => {
     const db = new Firestore();

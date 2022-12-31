@@ -6,7 +6,20 @@ import IDatabase from './IDatabase';
  * Firestore implementation of official LTIJS Database.js: https://github.com/Cvmcosta/ltijs/blob/664f25aa3f6c71f0592a02c6d5c394211b7dac55/src/Utils/Database.js
  * Code here follows official Database.js as closely as possible.
  */
-export default class Firestore implements IDatabase {
+export class Firestore implements IDatabase {
+  // But in VS Code requires options type to be {{}} instead of {Object} in jsdoc annotation: https://stackoverflow.com/a/66587658/188740
+  /**
+   * @param {{}} options Options
+   * @param {string} options.collectionPrefix A custom prefix to prepend to all collection paths. Defaults to empty string.
+   * - Example 1: 'ltijs-' will create collections 'ltijs-accsesstoken', 'ltijs-platforms', etc.
+   * - Example 2: 'ltijs/index/' will create subcollections 'ltijs/index/accesstoken', 'ltijs/index/platforms', etc.
+   */
+  constructor(options?: { collectionPrefix?: string }) {
+    this.collectionPrefix = options?.collectionPrefix ?? '';
+  }
+
+  readonly collectionPrefix: string;
+
   /**
    * No-op, as setup for Firestore will happen outside of this class
    */
@@ -21,6 +34,10 @@ export default class Firestore implements IDatabase {
   async Close(): Promise<boolean> {
     console.log('Firestore close');
     return true;
+  }
+
+  private resolveCollectionPath(collection: string) {
+    return this.collectionPrefix + collection;
   }
 
   private appendFilters(
@@ -47,7 +64,10 @@ export default class Firestore implements IDatabase {
     if (!collection) throw new Error('MISSING_COLLECTION');
 
     const result = (
-      await this.appendFilters(db.collection(collection), query).get()
+      await this.appendFilters(
+        db.collection(this.resolveCollectionPath(collection)),
+        query,
+      ).get()
     ).docs.map(doc => doc.data());
 
     if (ENCRYPTIONKEY) {
@@ -93,7 +113,7 @@ export default class Firestore implements IDatabase {
       };
     }
 
-    await db.collection(collection).add({
+    await db.collection(this.resolveCollectionPath(collection)).add({
       ...newDocData,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -126,21 +146,29 @@ export default class Firestore implements IDatabase {
     try {
       await db.runTransaction(async transaction => {
         const snap = await transaction.get(
-          this.appendFilters(db.collection(collection), query),
+          this.appendFilters(
+            db.collection(this.resolveCollectionPath(collection)),
+            query,
+          ),
         );
 
         if (snap.size > 1)
           throw new Error(
-            `MULTIPLE_DOCUMENTS_FOUND: ${collection} | ${JSON.stringify(
-              query,
-            )}`,
+            `MULTIPLE_DOCUMENTS_FOUND: ${this.resolveCollectionPath(
+              collection,
+            )} | ${JSON.stringify(query)}`,
           );
 
         if (snap.size === 0)
-          transaction.set(db.collection(collection).doc(), {
-            ...newDocData,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
+          transaction.set(
+            db
+              .collection(this.resolveCollectionPath(collection))
+              .doc(),
+            {
+              ...newDocData,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+          );
         else transaction.update(snap.docs[0].ref, newDocData);
       });
     } catch {
@@ -160,16 +188,16 @@ export default class Firestore implements IDatabase {
       throw new Error('MISSING_PARAMS');
 
     const snap = await this.appendFilters(
-      db.collection(collection),
+      db.collection(this.resolveCollectionPath(collection)),
       query,
     ).get();
 
     if (snap.size === 0) throw new Error('DOCUMENT_NOT_FOUND');
     if (snap.size > 1)
       throw new Error(
-        `MULTIPLE_DOCUMENTS_FOUND: ${collection} | ${JSON.stringify(
-          query,
-        )}`,
+        `MULTIPLE_DOCUMENTS_FOUND: ${this.resolveCollectionPath(
+          collection,
+        )} | ${JSON.stringify(query)}`,
       );
 
     let newMod = modification;
@@ -201,7 +229,7 @@ export default class Firestore implements IDatabase {
     const batch = db.batch();
 
     const snap = await this.appendFilters(
-      db.collection(collection),
+      db.collection(this.resolveCollectionPath(collection)),
       query,
     ).get();
 
