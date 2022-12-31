@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Cache firebase emulators
@@ -37,13 +37,13 @@ jobs:
       changed: ${{steps.check.outputs.changed}}
       version: ${{steps.check.outputs.version}}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - name: Check if version changed in package.json
         id: check
-        uses: EndBug/version-check@v1 # https://github.com/marketplace/actions/version-check
+        uses: EndBug/version-check@v2 # https://github.com/marketplace/actions/version-check
         with:
           diff-search: true
           file-name: ./package.json
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create Release
         # https://github.com/actions/create-release
         id: create_release
