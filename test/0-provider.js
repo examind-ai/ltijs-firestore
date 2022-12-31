@@ -86,7 +86,7 @@ describe('Firestore Get', function () {
     expect(result[0].createdAt).to.be.a('number');
   });
 
-  it('Index is ignored if ENCRYPTIONKEY is not passed in', async () => {
+  it('Ignoreds index if ENCRYPTIONKEY is not passed in', async () => {
     const db = new Firestore();
     await db.Insert(
       false,
@@ -102,7 +102,7 @@ describe('Firestore Get', function () {
     expect(result).to.equal(false);
   });
 
-  it('Query by item if if ENCRYPTIONKEY is not passed in', async () => {
+  it('Queries by item if ENCRYPTIONKEY is not passed in', async () => {
     const db = new Firestore();
     await db.Insert(false, 'widgets', { id: 'id-3', name: 'tyson' });
 
@@ -111,10 +111,26 @@ describe('Firestore Get', function () {
     });
 
     expect(result.length).to.equal(1);
-    expect(Object.keys(result[0]).length).to.equal(3);
     expect(result[0].id).to.equal('id-3');
     expect(result[0].name).to.equal('tyson');
     expect(result[0].createdAt).to.be.ok;
+  });
+
+  it('Inserts timestamps', async () => {
+    const db = new Firestore();
+    await db.Insert(false, 'widgets', { id: 'id-4' });
+
+    const result = await db.Get(false, 'widgets', {
+      id: 'id-4',
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(6);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].age2MinutesAt).to.be.ok;
+    expect(result[0].age10MinutesAt).to.be.ok;
+    expect(result[0].age1HourAt).to.be.ok;
+    expect(result[0].age24HoursAt).to.be.ok;
   });
 
   it('Returns multiple results for multiple matches', async () => {

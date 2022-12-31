@@ -91,6 +91,21 @@ export class Firestore implements IDatabase {
     return result;
   }
 
+  private addMinutes(date: Date, minutes: number) {
+    return new Date(date.getTime() + minutes * 60000);
+  }
+
+  private timestamps() {
+    const now = new Date();
+    return {
+      createdAt: now,
+      age2MinutesAt: this.addMinutes(now, 2),
+      age10MinutesAt: this.addMinutes(now, 10),
+      age1HourAt: this.addMinutes(now, 60),
+      age24HoursAt: this.addMinutes(now, 24 * 60),
+    };
+  }
+
   async Insert(
     ENCRYPTIONKEY: string,
     collection: string,
@@ -115,7 +130,7 @@ export class Firestore implements IDatabase {
 
     await db.collection(this.resolveCollectionPath(collection)).add({
       ...newDocData,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      ...this.timestamps(),
     });
     return true;
   }
@@ -166,7 +181,7 @@ export class Firestore implements IDatabase {
               .doc(),
             {
               ...newDocData,
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              ...this.timestamps(),
             },
           );
         else transaction.update(snap.docs[0].ref, newDocData);

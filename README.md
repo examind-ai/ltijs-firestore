@@ -109,22 +109,82 @@ As an alternative to using the Firebase Admin SDK private key, you can choose to
 
 ## Purging Stale Documents
 
-The default detabase provider of LTIJS uses MongoDB as its storage layer and it's configured to automatically purge stale documents. Using `@examind/ltijs-firestore` alone will not do that for Firestore. You must also use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
+The default detabase provider of LTIJS uses MongoDB as its storage layer and it's configured to automatically purge stale documents. To set up the same behavior in Firestore, we'll use one of 2 strategies depending on which version of @examind/ltijs-firestore you're using.
+
+### @examind/ltijs-firestore <= v1.0.0
+
+Use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
+
+### @examind/ltijs-firestore >= v1.1.0
+
+As of @examind/litjs-firestore@1.1.0, all new documents created in Firestore will include the following fields:
+
+- age2MinutesAt
+- age10MinutesAt
+- age1HourAt
+- age24HoursAt
+
+We'll use these fields to set up [Firestore TTL Policies](https://firebase.google.com/docs/firestore/ttl) to auto-purge stale documents. You only need to set this up once.
+
+Using gcloud, substitute your project ID for {project_id} and execute the following commands. Warning, this will take a while.
+
+```
+gcloud beta firestore fields ttls update age1HourAt --collection-group=accesstoken --enable-ttl --project={project_id}
+gcloud beta firestore fields ttls update age24HoursAt --collection-group=contexttoken --enable-ttl --project={project_id}
+gcloud beta firestore fields ttls update age24HoursAt --collection-group=idtoken --enable-ttl --project={project_id}
+gcloud beta firestore fields ttls update age2MinutesAt --collection-group=nonce --enable-ttl --project={project_id}
+gcloud beta firestore fields ttls update age10MinutesAt --collection-group=state --enable-ttl --project={project_id}
+```
+
+To ensure that everything worked correctly, you can list all your TTL policies:
+
+```
+gcloud beta firestore fields ttls list --project={project_id}
+```
+
+You should see something like this:
+
+```
+---
+name: projects/{project_id}/databases/(default)/collectionGroups/accesstoken/fields/age1HourAt
+ttlConfig:
+  state: ACTIVE
+---
+name: projects/{project_id}/databases/(default)/collectionGroups/contexttoken/fields/age24HoursAt
+ttlConfig:
+  state: ACTIVE
+---
+name: projects/{project_id}/databases/(default)/collectionGroups/idtoken/fields/age24HoursAt
+ttlConfig:
+  state: ACTIVE
+---
+name: projects/{project_id}/databases/(default)/collectionGroups/nonce/fields/age2MinutesAt
+ttlConfig:
+  state: ACTIVE
+---
+name: projects/{project_id}/databases/(default)/collectionGroups/state/fields/age10MinutesAt
+ttlConfig:
+  state: ACTIVE
+```
 
 # Development
 
 Clone this repo, navigate to its location in Terminal and run:
 
 ```
+
 npm ci
 npm run compile
 npm link
+
 ```
 
 In another project, link directly to this repo:
 
 ```
+
 npm link @examind/ltijs-firestore
+
 ```
 
 ## Unit Test
@@ -132,10 +192,12 @@ npm link @examind/ltijs-firestore
 Running unit tests requires that the Firebase CLI (`firebase-tools`) is installed globally:
 
 ```
+
 npm install -g firebase-tools@11.9.0
 npm ci
 npm run compile
 npm test
+
 ```
 
 To use VS Code's debugger:
@@ -149,3 +211,7 @@ To use VS Code's debugger:
 - Bump version in package.json
 - `npm install`
 - Commit with message: `Release {version, e.g. 0.1.6}`
+
+```
+
+```
