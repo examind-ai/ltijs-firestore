@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { admin, db } from './firebase';
+import { db } from './firebase';
 import IDatabase from './IDatabase';
 
 /**

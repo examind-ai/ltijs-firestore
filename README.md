@@ -193,7 +193,7 @@ Running unit tests requires that the Firebase CLI (`firebase-tools`) is installe
 
 ```
 
-npm install -g firebase-tools@11.9.0
+npm install -g firebase-tools@12.4.2
 npm ci
 npm run compile
 npm test
@@ -211,7 +211,3 @@ To use VS Code's debugger:
 - Bump version in package.json
 - `npm install`
 - Commit with message: `Release {version, e.g. 0.1.6}`
-
-```
-
-```
