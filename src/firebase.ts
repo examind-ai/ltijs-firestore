@@ -14,6 +14,12 @@ const app = initializeApp(
 
 const db = getFirestore(app);
 
-db.settings({ ignoreUndefinedProperties: true });
+db.settings({
+  ignoreUndefinedProperties: true,
+  // Faster cold starts by using REST (instead of gRPC) where possible: https://github.com/firebase/firebase-admin-node/pull/1901
+  // As of 2023-07-06, the only operation that requires gRPC is onSnapshot(), which we don't use on the server: https://firebase.google.com/docs/reference/admin/node/firebase-admin.firestore.firestoresettings
+  // Cold start issue tracker: https://issuetracker.google.com/issues/158014637#comment212
+  preferRest: true,
+});
 
 export { db };
