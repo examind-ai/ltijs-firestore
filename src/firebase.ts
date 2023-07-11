@@ -16,13 +16,7 @@ const app = initializeApp(
 );
 
 // initializeFirestore seems to be recommended over getFirestore: https://github.com/firebase/firebase-admin-node/pull/1901#issuecomment-1385621126
-const db = initializeFirestore(app, {
-  // Faster cold starts by using REST (instead of gRPC) where possible: https://github.com/firebase/firebase-admin-node/pull/1901
-  // As of 2023-07-06, the only operation that requires gRPC is onSnapshot(), which we don't use on the server: https://firebase.google.com/docs/reference/admin/node/firebase-admin.firestore.firestoresettings
-  // Cold start issue tracker: https://issuetracker.google.com/issues/158014637#comment212
-  // Disable `preferRest` when running with emulator b/c it causes unit tests to time out on Linux and macOS: https://github.com/firebase/firebase-admin-node/issues/2016#issuecomment-1624775019
-  preferRest: !process.env.FIRESTORE_EMULATOR_HOST,
-});
+const db = initializeFirestore(app);
 
 db.settings({
   ignoreUndefinedProperties: true,
