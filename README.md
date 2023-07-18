@@ -129,17 +129,17 @@ We'll use these fields to set up [Firestore TTL Policies](https://firebase.googl
 Using gcloud, substitute your project ID for {project_id} and execute the following commands. Warning, this will take a while.
 
 ```
-gcloud beta firestore fields ttls update age1HourAt --collection-group=accesstoken --enable-ttl --project={project_id}
-gcloud beta firestore fields ttls update age24HoursAt --collection-group=contexttoken --enable-ttl --project={project_id}
-gcloud beta firestore fields ttls update age24HoursAt --collection-group=idtoken --enable-ttl --project={project_id}
-gcloud beta firestore fields ttls update age2MinutesAt --collection-group=nonce --enable-ttl --project={project_id}
-gcloud beta firestore fields ttls update age10MinutesAt --collection-group=state --enable-ttl --project={project_id}
+gcloud firestore fields ttls update age1HourAt --collection-group=accesstoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update age24HoursAt --collection-group=contexttoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update age24HoursAt --collection-group=idtoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update age2MinutesAt --collection-group=nonce --enable-ttl --project={project_id}
+gcloud firestore fields ttls update age10MinutesAt --collection-group=state --enable-ttl --project={project_id}
 ```
 
 To ensure that everything worked correctly, you can list all your TTL policies:
 
 ```
-gcloud beta firestore fields ttls list --project={project_id}
+gcloud firestore fields ttls list --project={project_id}
 ```
 
 You should see something like this:
