@@ -111,20 +111,105 @@ As an alternative to using the Firebase Admin SDK private key, you can choose to
 
 The default detabase provider of LTIJS uses MongoDB as its storage layer and it's configured to automatically purge stale documents. To set up the same behavior in Firestore, we'll use one of 2 strategies depending on which version of @examind/ltijs-firestore you're using.
 
-### @examind/ltijs-firestore <= v1.0.0
+### @examind/ltijs-firestore v2+
 
-Use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
+@examind/litjs-firestore@2+ sets `expiresAt` on the following documents:
 
-### @examind/ltijs-firestore >= v1.1.0
+- accesstoken
+- contexttoken
+- idtoken
+- nonce
+- state
 
-As of @examind/litjs-firestore@1.1.0, all new documents created in Firestore will include the following fields:
+Use this field set up [Firestore TTL Policies](https://firebase.google.com/docs/firestore/ttl) to auto-purge stale documents. You only need to set this up once.
+
+Using gcloud, substitute your project ID for {project_id} and execute the following commands. Warning, this will take a while.
+
+```
+gcloud firestore fields ttls update expiresAt --collection-group=accesstoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update expiresAt --collection-group=contexttoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update expiresAt --collection-group=idtoken --enable-ttl --project={project_id}
+gcloud firestore fields ttls update expiresAt --collection-group=nonce --enable-ttl --project={project_id}
+gcloud firestore fields ttls update expiresAt --collection-group=state --enable-ttl --project={project_id}
+```
+
+To ensure that everything worked correctly, you can list all your TTL policies:
+
+```
+gcloud firestore fields ttls list --project={project_id}
+```
+
+#### Upgrade Guide
+
+When upgrading from v1.1+, previous TTL policies will need to be deleted as Firestore only allows 1 TTL policy per collection group. You'll also want to amend the existing documents in the database so they include expiresAt fields.
+
+Delete previous TTL policies:
+
+```
+gcloud firestore fields ttls update age1HourAt --collection-group=accesstoken --disable-ttl --project={project_id}
+gcloud firestore fields ttls update age24HoursAt --collection-group=contexttoken --disable-ttl --project={project_id}
+gcloud firestore fields ttls update age24HoursAt --collection-group=idtoken --disable-ttl --project={project_id}
+gcloud firestore fields ttls update age2MinutesAt --collection-group=nonce --disable-ttl --project={project_id}
+gcloud firestore fields ttls update age10MinutesAt --collection-group=state --disable-ttl --project={project_id}
+```
+
+To add `deletedAt` to existing documents, use firebase-admin to run the following script.  
+You'll need to set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a gcloud auth key for this to work: `export GOOGLE_APPLICATION_CREDENTIALS='./my-gcloud-auth-key.json'`
+
+```
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+
+const app = initializeApp({ projectId: 'my-project-id' });
+const db = getFirestore(app);
+
+// Set this if you're using a collection prefix
+const COLLECTION_PREFIX = '';
+
+const addMinutes = (date, minutes) =>
+  new Date(date.getTime() + minutes * 60000);
+
+(async () => {
+  const collectionExpiresInMinutes = {
+    accesstoken: 60,
+    contexttoken: 24 * 60,
+    idtoken: 24 * 60,
+    nonce: 2,
+    state: 10,
+  };
+
+  for (const [collection, expiresInMinutes] of Object.entries(
+    collectionExpiresInMinutes,
+  )) {
+    const documents = await db
+      .collection(`${COLLECTION_PREFIX}${collection}`)
+      .get();
+
+    for (const document of documents.docs) {
+      if (!document.data().createdAt) continue;
+      await document.ref.update({
+        expiresAt: addMinutes(
+          document.data().createdAt.toDate(),
+          expiresInMinutes,
+        ),
+      });
+    }
+  }
+
+  console.log('Done');
+})();
+```
+
+### @examind/ltijs-firestore v1.1.0 - v1.3.2
+
+@examind/litjs-firestore@1.1.0 - 1.3.2 sets the following fields on all new documents created in Firestore:
 
 - age2MinutesAt
 - age10MinutesAt
 - age1HourAt
 - age24HoursAt
 
-We'll use these fields to set up [Firestore TTL Policies](https://firebase.google.com/docs/firestore/ttl) to auto-purge stale documents. You only need to set this up once.
+Use these fields to set up [Firestore TTL Policies](https://firebase.google.com/docs/firestore/ttl) to auto-purge stale documents. You only need to set this up once.
 
 Using gcloud, substitute your project ID for {project_id} and execute the following commands. Warning, this will take a while.
 
@@ -142,30 +227,9 @@ To ensure that everything worked correctly, you can list all your TTL policies:
 gcloud firestore fields ttls list --project={project_id}
 ```
 
-You should see something like this:
+### @examind/ltijs-firestore <= v1.0.0
 
-```
----
-name: projects/{project_id}/databases/(default)/collectionGroups/accesstoken/fields/age1HourAt
-ttlConfig:
-  state: ACTIVE
----
-name: projects/{project_id}/databases/(default)/collectionGroups/contexttoken/fields/age24HoursAt
-ttlConfig:
-  state: ACTIVE
----
-name: projects/{project_id}/databases/(default)/collectionGroups/idtoken/fields/age24HoursAt
-ttlConfig:
-  state: ACTIVE
----
-name: projects/{project_id}/databases/(default)/collectionGroups/nonce/fields/age2MinutesAt
-ttlConfig:
-  state: ACTIVE
----
-name: projects/{project_id}/databases/(default)/collectionGroups/state/fields/age10MinutesAt
-ttlConfig:
-  state: ACTIVE
-```
+Use [@examind/ltijs-firestore-scheduler](https://www.npmjs.com/package/@examind/ltijs-firestore-scheduler).
 
 # Development
 
