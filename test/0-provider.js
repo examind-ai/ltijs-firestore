@@ -62,7 +62,7 @@ describe('Firestore Get', function () {
     });
 
     // No result b/c of different collection prefixes
-    expect(result).to.equal(false);
+    expect(result).to.be.false;
   });
 
   it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in', async () => {
@@ -91,7 +91,7 @@ describe('Firestore Get', function () {
       id,
     });
 
-    expect(result).to.equal(false);
+    expect(result).to.be.false;
   });
 
   it('Queries by item if ENCRYPTIONKEY is not passed in', async () => {
