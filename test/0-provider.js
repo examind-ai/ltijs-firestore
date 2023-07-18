@@ -31,18 +31,14 @@ describe('Firestore Get', function () {
 
   it('Honors collectionPrefix', async () => {
     const collection = 'widgets';
+    const id = 'pref-1';
     const db1 = new Firestore({ collectionPrefix: 'ltijs-' });
-    await db1.Insert(
-      'LTIKEY',
-      collection,
-      { foo: 'bar' },
-      { id: 'pref-1' },
-    );
+    await db1.Insert('LTIKEY', collection, { foo: 'bar' }, { id });
 
     const db2 = new Firestore({ collectionPrefix: 'ltijs-' });
 
     const result = await db2.Get('LTIKEY', collection, {
-      id: 'pref-1',
+      id,
     });
 
     expect(result.length).to.equal(1);
@@ -71,16 +67,12 @@ describe('Firestore Get', function () {
 
   it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in', async () => {
     const collection = 'widgets';
+    const id = 'id-1';
     const db = new Firestore();
-    await db.Insert(
-      'LTIKEY',
-      collection,
-      { foo: 'bar-1' },
-      { id: 'id-1' },
-    );
+    await db.Insert('LTIKEY', collection, { foo: 'bar-1' }, { id });
 
     const result = await db.Get('LTIKEY', collection, {
-      id: 'id-1',
+      id,
     });
 
     expect(result.length).to.equal(1);
@@ -91,16 +83,12 @@ describe('Firestore Get', function () {
 
   it('Ignoreds index if ENCRYPTIONKEY is not passed in', async () => {
     const collection = 'widgets';
+    const id = 'id-2';
     const db = new Firestore();
-    await db.Insert(
-      false,
-      collection,
-      { foo: 'bar-2' },
-      { id: 'id-2' },
-    );
+    await db.Insert(false, collection, { foo: 'bar-2' }, { id });
 
     const result = await db.Get(false, collection, {
-      id: 'id-2',
+      id,
     });
 
     expect(result).to.equal(false);
@@ -108,26 +96,28 @@ describe('Firestore Get', function () {
 
   it('Queries by item if ENCRYPTIONKEY is not passed in', async () => {
     const collection = 'widgets';
+    const id = 'id-3';
     const db = new Firestore();
-    await db.Insert(false, collection, { id: 'id-3', name: 'tyson' });
+    await db.Insert(false, collection, { id, name: 'tyson' });
 
     const result = await db.Get(false, collection, {
-      id: 'id-3',
+      id,
     });
 
     expect(result.length).to.equal(1);
-    expect(result[0].id).to.equal('id-3');
+    expect(result[0].id).to.equal(id);
     expect(result[0].name).to.equal('tyson');
     expect(result[0].createdAt).to.be.ok;
   });
 
   it('Inserts timestamps', async () => {
     const collection = 'widgets';
+    const id = 'id-4';
     const db = new Firestore();
-    await db.Insert(false, collection, { id: 'id-4' });
+    await db.Insert(false, collection, { id });
 
     const result = await db.Get(false, collection, {
-      id: 'id-4',
+      id,
     });
 
     expect(result.length).to.equal(1);
