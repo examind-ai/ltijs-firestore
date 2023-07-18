@@ -30,17 +30,18 @@ describe('Firestore Get', function () {
   this.timeout(10000);
 
   it('Honors collectionPrefix', async () => {
+    const collection = 'widgets';
     const db1 = new Firestore({ collectionPrefix: 'ltijs-' });
     await db1.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { foo: 'bar' },
       { id: 'pref-1' },
     );
 
     const db2 = new Firestore({ collectionPrefix: 'ltijs-' });
 
-    const result = await db2.Get('LTIKEY', 'widgets', {
+    const result = await db2.Get('LTIKEY', collection, {
       id: 'pref-1',
     });
 
@@ -49,6 +50,7 @@ describe('Firestore Get', function () {
   });
 
   it('Prevents name collision through collectionPrefix', async () => {
+    const collection = 'widgets';
     const db1 = new Firestore({ collectionPrefix: 'ltijs-' });
     await db1.Insert(
       'LTIKEY',
@@ -59,7 +61,7 @@ describe('Firestore Get', function () {
 
     const db2 = new Firestore();
 
-    const result = await db2.Get('LTIKEY', 'widgets', {
+    const result = await db2.Get('LTIKEY', collection, {
       id: 'id1',
     });
 
@@ -68,15 +70,16 @@ describe('Firestore Get', function () {
   });
 
   it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
     await db.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { foo: 'bar-1' },
       { id: 'id-1' },
     );
 
-    const result = await db.Get('LTIKEY', 'widgets', {
+    const result = await db.Get('LTIKEY', collection, {
       id: 'id-1',
     });
 
@@ -87,15 +90,16 @@ describe('Firestore Get', function () {
   });
 
   it('Ignoreds index if ENCRYPTIONKEY is not passed in', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
     await db.Insert(
       false,
-      'widgets',
+      collection,
       { foo: 'bar-2' },
       { id: 'id-2' },
     );
 
-    const result = await db.Get(false, 'widgets', {
+    const result = await db.Get(false, collection, {
       id: 'id-2',
     });
 
@@ -103,10 +107,11 @@ describe('Firestore Get', function () {
   });
 
   it('Queries by item if ENCRYPTIONKEY is not passed in', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
-    await db.Insert(false, 'widgets', { id: 'id-3', name: 'tyson' });
+    await db.Insert(false, collection, { id: 'id-3', name: 'tyson' });
 
-    const result = await db.Get(false, 'widgets', {
+    const result = await db.Get(false, collection, {
       id: 'id-3',
     });
 
@@ -117,10 +122,11 @@ describe('Firestore Get', function () {
   });
 
   it('Inserts timestamps', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
-    await db.Insert(false, 'widgets', { id: 'id-4' });
+    await db.Insert(false, collection, { id: 'id-4' });
 
-    const result = await db.Get(false, 'widgets', {
+    const result = await db.Get(false, collection, {
       id: 'id-4',
     });
 
@@ -134,22 +140,23 @@ describe('Firestore Get', function () {
   });
 
   it('Returns multiple results for multiple matches', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
     await db.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { platformName: 'Adara' },
       { platformId: 'platform-1', location: 'Vancouver', count: 1 },
     );
 
     await db.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { platformName: 'Arius' },
       { platformId: 'platform-1', location: 'Vancouver', count: 2 },
     );
 
-    const result = await db.Get('LTIKEY', 'widgets', {
+    const result = await db.Get('LTIKEY', collection, {
       platformId: 'platform-1',
       location: 'Vancouver',
     });
@@ -163,22 +170,23 @@ describe('Firestore Get', function () {
   });
 
   it('Returns exact match only', async () => {
+    const collection = 'widgets';
     const db = new Firestore();
     await db.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { platformName: 'Acantha' },
       { platformId: 'platform-2', location: 'Burnaby' },
     );
 
     await db.Insert(
       'LTIKEY',
-      'widgets',
+      collection,
       { platformName: 'Acestes' },
       { platformId: 'platform-2', location: 'Coquitlam' },
     );
 
-    const result = await db.Get('LTIKEY', 'widgets', {
+    const result = await db.Get('LTIKEY', collection, {
       platformId: 'platform-2',
       location: 'Coquitlam',
     });
