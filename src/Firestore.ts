@@ -91,18 +91,29 @@ export class Firestore implements IDatabase {
     return result;
   }
 
+  private collectionExpiresInMinutes: Partial<
+    Record<string, number>
+  > = {
+    accesstoken: 60,
+    contexttoken: 24 * 60,
+    idtoken: 24 * 60,
+    nonce: 2,
+    state: 10,
+  };
+
   private addMinutes(date: Date, minutes: number) {
     return new Date(date.getTime() + minutes * 60000);
   }
 
-  private timestamps() {
+  private timestamps(collection: string) {
     const now = new Date();
+    const expiresInMinutes =
+      this.collectionExpiresInMinutes[collection];
     return {
       createdAt: now,
-      age2MinutesAt: this.addMinutes(now, 2),
-      age10MinutesAt: this.addMinutes(now, 10),
-      age1HourAt: this.addMinutes(now, 60),
-      age24HoursAt: this.addMinutes(now, 24 * 60),
+      expiresAt: expiresInMinutes
+        ? this.addMinutes(now, expiresInMinutes)
+        : undefined, // Firestore is configured to ignore undefined properties in firebase.ts
     };
   }
 
@@ -130,7 +141,7 @@ export class Firestore implements IDatabase {
 
     await db.collection(this.resolveCollectionPath(collection)).add({
       ...newDocData,
-      ...this.timestamps(),
+      ...this.timestamps(collection),
     });
     return true;
   }
@@ -181,7 +192,7 @@ export class Firestore implements IDatabase {
               .doc(),
             {
               ...newDocData,
-              ...this.timestamps(),
+              ...this.timestamps(collection),
             },
           );
         else transaction.update(snap.docs[0].ref, newDocData);

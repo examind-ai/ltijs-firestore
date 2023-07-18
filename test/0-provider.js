@@ -26,6 +26,22 @@ const loginRoute = '/loginroute';
 const keysetRoute = '/keysetroute';
 const dynRegRoute = '/register';
 
+/**
+ *
+ * @param {Date} time
+ * @param {Number} minutesFromNow
+ */
+const expiresAtTimeIsMinutesFromNow = (expiresAt, minutesFromNow) => {
+  const expectedTime = new Date();
+  expectedTime.setMinutes(expectedTime.getMinutes() + minutesFromNow);
+
+  const differenceInSeconds = Math.abs(
+    (expiresAt.getTime() - expectedTime.getTime()) / 1000,
+  );
+
+  return differenceInSeconds < 2;
+};
+
 describe('Firestore Get', function () {
   this.timeout(10000);
 
@@ -110,7 +126,7 @@ describe('Firestore Get', function () {
     expect(result[0].createdAt).to.be.ok;
   });
 
-  it('Inserts timestamps', async () => {
+  it('Inserts createdAt', async () => {
     const collection = 'widgets';
     const id = 'id-4';
     const db = new Firestore();
@@ -121,12 +137,109 @@ describe('Firestore Get', function () {
     });
 
     expect(result.length).to.equal(1);
-    expect(Object.keys(result[0]).length).to.equal(6);
+    expect(Object.keys(result[0]).length).to.equal(2);
     expect(result[0].createdAt).to.be.ok;
-    expect(result[0].age2MinutesAt).to.be.ok;
-    expect(result[0].age10MinutesAt).to.be.ok;
-    expect(result[0].age1HourAt).to.be.ok;
-    expect(result[0].age24HoursAt).to.be.ok;
+  });
+
+  it('Sets accesstoken to expire in 60 minutes', async () => {
+    const collection = 'accesstoken';
+    const id = 'id-5';
+    const db = new Firestore();
+    await db.Insert(false, collection, { id });
+
+    const result = await db.Get(false, collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].expiresAt).to.be.ok;
+    expect(
+      expiresAtTimeIsMinutesFromNow(result[0].expiresAt.toDate(), 60),
+    ).to.be.true;
+  });
+
+  it('Sets contexttoken to expire in 24 hours', async () => {
+    const collection = 'contexttoken';
+    const id = 'id-6';
+    const db = new Firestore();
+    await db.Insert(false, collection, { id });
+
+    const result = await db.Get(false, collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].expiresAt).to.be.ok;
+    expect(
+      expiresAtTimeIsMinutesFromNow(
+        result[0].expiresAt.toDate(),
+        24 * 60,
+      ),
+    ).to.be.true;
+  });
+
+  it('Sets idtoken to expire in 24 hours', async () => {
+    const collection = 'idtoken';
+    const id = 'id-7';
+    const db = new Firestore();
+    await db.Insert(false, collection, { id });
+
+    const result = await db.Get(false, collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].expiresAt).to.be.ok;
+    expect(
+      expiresAtTimeIsMinutesFromNow(
+        result[0].expiresAt.toDate(),
+        24 * 60,
+      ),
+    ).to.be.true;
+  });
+
+  it('Sets nonce to expire in 2 minutes', async () => {
+    const collection = 'nonce';
+    const id = 'id-8';
+    const db = new Firestore();
+    await db.Insert(false, collection, { id });
+
+    const result = await db.Get(false, collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].expiresAt).to.be.ok;
+    expect(
+      expiresAtTimeIsMinutesFromNow(result[0].expiresAt.toDate(), 2),
+    ).to.be.true;
+  });
+
+  it('Sets state to expire in 10 minutes', async () => {
+    const collection = 'state';
+    const id = 'id-8';
+    const db = new Firestore();
+    await db.Insert(false, collection, { id });
+
+    const result = await db.Get(false, collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(3);
+    expect(result[0].createdAt).to.be.ok;
+    expect(result[0].expiresAt).to.be.ok;
+    expect(
+      expiresAtTimeIsMinutesFromNow(result[0].expiresAt.toDate(), 10),
+    ).to.be.true;
   });
 
   it('Returns multiple results for multiple matches', async () => {
