@@ -50,6 +50,23 @@ export class Firestore implements IDatabase {
     return collectionRef;
   }
 
+  hasExpired(document: unknown) {
+    if (typeof document !== 'object' || document === null)
+      return false;
+    if (!('expiresAt' in document)) return false;
+
+    const expiresAt = (document as { expiresAt: unknown }).expiresAt;
+    if (typeof expiresAt !== 'object' || expiresAt === null)
+      return false;
+    if (!('toDate' in expiresAt)) return false;
+    if (typeof expiresAt.toDate !== 'function') return false;
+
+    const expirationDate = expiresAt.toDate();
+    if (!(expirationDate instanceof Date)) return false;
+
+    return expirationDate.getTime() < new Date().getTime();
+  }
+
   /**
    * @description Get item or entire database.
    * @param {String} ENCRYPTIONKEY - Encryptionkey of the database, false if none
@@ -68,7 +85,9 @@ export class Firestore implements IDatabase {
         db.collection(this.resolveCollectionPath(collection)),
         query,
       ).get()
-    ).docs.map(doc => doc.data());
+    ).docs
+      .map(doc => doc.data())
+      .filter(doc => !this.hasExpired(doc));
 
     if (ENCRYPTIONKEY) {
       for (const i in result) {
@@ -91,18 +110,29 @@ export class Firestore implements IDatabase {
     return result;
   }
 
+  private collectionExpiresInMinutes: Partial<
+    Record<string, number>
+  > = {
+    accesstoken: 60,
+    contexttoken: 24 * 60,
+    idtoken: 24 * 60,
+    nonce: 2,
+    state: 10,
+  };
+
   private addMinutes(date: Date, minutes: number) {
     return new Date(date.getTime() + minutes * 60000);
   }
 
-  private timestamps() {
+  private timestamps(collection: string) {
     const now = new Date();
+    const expiresInMinutes =
+      this.collectionExpiresInMinutes[collection];
     return {
       createdAt: now,
-      age2MinutesAt: this.addMinutes(now, 2),
-      age10MinutesAt: this.addMinutes(now, 10),
-      age1HourAt: this.addMinutes(now, 60),
-      age24HoursAt: this.addMinutes(now, 24 * 60),
+      expiresAt: expiresInMinutes
+        ? this.addMinutes(now, expiresInMinutes)
+        : undefined, // Firestore is configured to ignore undefined properties in firebase.ts
     };
   }
 
@@ -130,7 +160,7 @@ export class Firestore implements IDatabase {
 
     await db.collection(this.resolveCollectionPath(collection)).add({
       ...newDocData,
-      ...this.timestamps(),
+      ...this.timestamps(collection),
     });
     return true;
   }
@@ -181,7 +211,7 @@ export class Firestore implements IDatabase {
               .doc(),
             {
               ...newDocData,
-              ...this.timestamps(),
+              ...this.timestamps(collection),
             },
           );
         else transaction.update(snap.docs[0].ref, newDocData);
