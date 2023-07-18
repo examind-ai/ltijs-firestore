@@ -97,9 +97,40 @@ describe('Firestore Get', function () {
     expect(result[0].createdAt).to.be.a('number');
   });
 
-  it('Ignoreds index if ENCRYPTIONKEY is not passed in', async () => {
-    const collection = 'widgets';
+  it('Retrieves item and createdAt if ENCRYPTIONKEY is passed in for nonce', async () => {
+    // Important to test something like nonce as expiresAt will be set for it
+    const collection = 'nonce';
     const id = 'id-2';
+    const db = new Firestore();
+    await db.Insert('LTIKEY', collection, { foo: 'bar-1' }, { id });
+
+    const result = await db.Get('LTIKEY', collection, {
+      id,
+    });
+
+    expect(result.length).to.equal(1);
+    expect(Object.keys(result[0]).length).to.equal(2); // If ENCRYPTIONKEY is passed in, only item and createdAt are returned
+    expect(result[0].foo).to.equal('bar-1');
+    expect(result[0].createdAt).to.be.a('number');
+  });
+
+  it('Does not return expired document', async () => {
+    const collection = 'nonce';
+    const id = 'id-3';
+    const db = new Firestore();
+    db.collectionExpiresInMinutes.nonce = -2; // Hack to set document to be expired in the past
+    await db.Insert('LTIKEY', collection, { foo: 'bar-1' }, { id });
+
+    const result = await db.Get('LTIKEY', collection, {
+      id,
+    });
+
+    expect(result).to.be.false;
+  });
+
+  it('Ignores index if ENCRYPTIONKEY is not passed in', async () => {
+    const collection = 'widgets';
+    const id = 'id-4';
     const db = new Firestore();
     await db.Insert(false, collection, { foo: 'bar-2' }, { id });
 
@@ -112,7 +143,7 @@ describe('Firestore Get', function () {
 
   it('Queries by item if ENCRYPTIONKEY is not passed in', async () => {
     const collection = 'widgets';
-    const id = 'id-3';
+    const id = 'id-5';
     const db = new Firestore();
     await db.Insert(false, collection, { id, name: 'tyson' });
 
@@ -128,7 +159,7 @@ describe('Firestore Get', function () {
 
   it('Inserts createdAt', async () => {
     const collection = 'widgets';
-    const id = 'id-4';
+    const id = 'id-6';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -143,7 +174,7 @@ describe('Firestore Get', function () {
 
   it('Sets accesstoken to expire in 60 minutes', async () => {
     const collection = 'accesstoken';
-    const id = 'id-5';
+    const id = 'id-7';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -162,7 +193,7 @@ describe('Firestore Get', function () {
 
   it('Sets contexttoken to expire in 24 hours', async () => {
     const collection = 'contexttoken';
-    const id = 'id-6';
+    const id = 'id-8';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -184,7 +215,7 @@ describe('Firestore Get', function () {
 
   it('Sets idtoken to expire in 24 hours', async () => {
     const collection = 'idtoken';
-    const id = 'id-7';
+    const id = 'id-9';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -206,7 +237,7 @@ describe('Firestore Get', function () {
 
   it('Sets nonce to expire in 2 minutes', async () => {
     const collection = 'nonce';
-    const id = 'id-8';
+    const id = 'id-10';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -225,7 +256,7 @@ describe('Firestore Get', function () {
 
   it('Sets state to expire in 10 minutes', async () => {
     const collection = 'state';
-    const id = 'id-8';
+    const id = 'id-11';
     const db = new Firestore();
     await db.Insert(false, collection, { id });
 
@@ -240,6 +271,30 @@ describe('Firestore Get', function () {
     expect(
       expiresAtTimeIsMinutesFromNow(result[0].expiresAt.toDate(), 10),
     ).to.be.true;
+  });
+
+  it('hasExpired returns false if document expiresAt is in the future', async () => {
+    const db = new Firestore();
+
+    const result = db.hasExpired({
+      expiresAt: {
+        toDate: () => new Date(Date.now() + 1 * 1000),
+      },
+    });
+
+    expect(result).to.be.false;
+  });
+
+  it('hasExpired returns true if document expiresAt is in the past', async () => {
+    const db = new Firestore();
+
+    const result = db.hasExpired({
+      expiresAt: {
+        toDate: () => new Date(Date.now() - 1 * 1000),
+      },
+    });
+
+    expect(result).to.be.true;
   });
 
   it('Returns multiple results for multiple matches', async () => {

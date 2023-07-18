@@ -50,6 +50,23 @@ export class Firestore implements IDatabase {
     return collectionRef;
   }
 
+  hasExpired(document: unknown) {
+    if (typeof document !== 'object' || document === null)
+      return false;
+    if (!('expiresAt' in document)) return false;
+
+    const expiresAt = (document as { expiresAt: unknown }).expiresAt;
+    if (typeof expiresAt !== 'object' || expiresAt === null)
+      return false;
+    if (!('toDate' in expiresAt)) return false;
+    if (typeof expiresAt.toDate !== 'function') return false;
+
+    const expirationDate = expiresAt.toDate();
+    if (!(expirationDate instanceof Date)) return false;
+
+    return expirationDate.getTime() < new Date().getTime();
+  }
+
   /**
    * @description Get item or entire database.
    * @param {String} ENCRYPTIONKEY - Encryptionkey of the database, false if none
@@ -68,7 +85,9 @@ export class Firestore implements IDatabase {
         db.collection(this.resolveCollectionPath(collection)),
         query,
       ).get()
-    ).docs.map(doc => doc.data());
+    ).docs
+      .map(doc => doc.data())
+      .filter(doc => !this.hasExpired(doc));
 
     if (ENCRYPTIONKEY) {
       for (const i in result) {
