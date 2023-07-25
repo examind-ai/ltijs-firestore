@@ -1,8 +1,5 @@
 import { initializeApp, cert } from 'firebase-admin/app';
-import {
-  getFirestore,
-  initializeFirestore,
-} from 'firebase-admin/firestore';
+import { initializeFirestore } from 'firebase-admin/firestore';
 
 // The service account key determines which Firebase project we're using.
 
