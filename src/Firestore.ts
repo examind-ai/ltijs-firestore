@@ -188,6 +188,13 @@ export class Firestore implements IDatabase {
       };
     }
 
+    // Setting a new expiresAt for document replacement is important in case that document is expired but still in Firestore.
+    // In such scenario, we need to ensure that document is no longer expired so it'll be retrievable by Firestore.Get(): https://github.com/examind-ai/ltijs-firestore/issues/8
+    newDocData = {
+      ...newDocData,
+      ...this.timestamps(collection),
+    };
+
     try {
       await db.runTransaction(async transaction => {
         const snap = await transaction.get(
@@ -209,12 +216,9 @@ export class Firestore implements IDatabase {
             db
               .collection(this.resolveCollectionPath(collection))
               .doc(),
-            {
-              ...newDocData,
-              ...this.timestamps(collection),
-            },
+            newDocData,
           );
-        else transaction.update(snap.docs[0].ref, newDocData);
+        else transaction.set(snap.docs[0].ref, newDocData);
       });
     } catch {
       throw new Error('TRANSACTION_ERROR');
